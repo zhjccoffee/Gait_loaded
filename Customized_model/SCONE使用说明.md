@@ -23,7 +23,7 @@
 
 第一阶段得到能够稳定走满 5 秒的结果后，再以最佳 `.par` 为初值，将仿真时长逐步提高到 10 秒和 20 秒，并恢复 effort、膝关节限制和地面反力测度。
 
-`initial_load = 0` 是有意设置：这个 OpenSim 4 模型的骨盆关节名是 `groundPelvis`，而 SCONE 的自动初始加载功能固定查找旧示例中的 `ground_pelvis` 路径。骨盆高度和肌肉激活已由 `InitState_loaded.zml` 提供。
+SCONE 兼容模型将根关节规范为 `ground_pelvis`，使 H0918 预训练参数中的状态路径能够正确匹配，并允许 `initial_load = 1` 在仿真开始前根据重力和接触载荷调整初始状态。OpenSim 显示版仍保留原始关节名称。
 
 ## 为什么需要兼容模型
 

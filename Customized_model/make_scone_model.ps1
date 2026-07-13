@@ -85,6 +85,10 @@ if (-not [regex]::IsMatch($text, $forceSetPattern)) {
 $forceSet = "<ForceSet name=`"forceset`">`r`n`t`t`t<objects>`r`n$forces`r`n`t`t`t</objects>`r`n`t`t`t<groups />`r`n`t`t</ForceSet>"
 $text = [regex]::Replace($text, $forceSetPattern, [System.Text.RegularExpressions.MatchEvaluator]{ param($match) $forceSet }, 1)
 
+# SCONE's OpenSim initial-load routine and the pretrained H0918 parameter file
+# use the canonical /jointset/ground_pelvis/... state path.
+$text = $text.Replace('<PlanarJoint name="groundPelvis">', '<PlanarJoint name="ground_pelvis">')
+
 [System.IO.File]::WriteAllText($outputPath, $text, [System.Text.UTF8Encoding]::new($false))
 Write-Host "Created $openSimOutputPath"
 Write-Host "Created $outputPath"

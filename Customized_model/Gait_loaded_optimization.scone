@@ -15,7 +15,7 @@ CmaOptimizer {
 			state_init_file = InitState_loaded.zml
 			initial_state_offset = 0~0.002<-0.2,0.2>
 			initial_state_offset_exclude = "*_tx*;*_ty*;*_u;*/speed"
-			initial_load = 0
+			initial_load = 1
 			fixed_control_step_size = 0.01
 		}
 
