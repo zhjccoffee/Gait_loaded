@@ -4,6 +4,7 @@
 
 - `Gait_loaded_optimization.scone`：在 SCONE Studio 中打开的优化入口。
 - `2D_gait_15Rloaded_SCONE.osim`：供 SCONE 使用的兼容模型。
+- `2D_gait_15Rloaded_SCONE_locked_lumbar.osim`：第一阶段优化模型；腰部锁定，使负重躯干与骨盆保持刚性连接。
 - `2D_gait_15Rloaded_OpenSim.osim`：供 OpenSim GUI 查看、默认脚底位于地面的模型。
 - `2D_gait_15Rloaded.osim`：原始模型，未修改。
 - `InitState_loaded.zml`：初始步态姿态、速度和肌肉激活。
@@ -19,9 +20,11 @@
 
 ## 开始优化
 
-在 `Gait_loaded_optimization.scone` 打开的情况下启动优化。当前配置是第一阶段稳定行走优化：仿真时长 5 秒、目标速度 0.5 m/s，并加入腰部姿态反馈来控制负重躯干。SCONE 将 OpenSim 的 `lumbarAct` 按其坐标名暴露为执行器 `lumbar`，所以控制器中使用 `target = lumbar`。
+在 `Gait_loaded_optimization.scone` 打开的情况下启动优化。当前配置是第一阶段稳定行走优化：仿真时长 5 秒、目标速度 0.5 m/s，并使用锁定腰部的 SCONE 模型。这样负重躯干与骨盆保持刚性连接，与 H0918 控制器的上身假设一致。目标函数还包含一个低权重的 `PelvisTilt` 连续惩罚，在跌倒终止之前就为优化器提供避免骨盆翻转的方向。
 
 第一阶段得到能够稳定走满 5 秒的结果后，再以最佳 `.par` 为初值，将仿真时长逐步提高到 10 秒和 20 秒，并恢复 effort、膝关节限制和地面反力测度。
+
+此前的全局躯干方向反馈会让骨盆与腰部发生幅值相近、方向相反的旋转：躯干看似保持向上，但骨盆会从躯干下方翻转。只有在刚性负重步态稳定后，才应解锁腰部并使用相对 `lumbar` 角度控制，同时增加关节限位。
 
 SCONE 兼容模型将根关节规范为 `ground_pelvis`，使 H0918 预训练参数中的状态路径能够正确匹配，并允许 `initial_load = 1` 在仿真开始前根据重力和接触载荷调整初始状态。OpenSim 显示版仍保留原始关节名称。
 

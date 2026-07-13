@@ -11,7 +11,7 @@ CmaOptimizer {
 		max_duration = 5
 
 		ModelOpenSim4 {
-			model_file = 2D_gait_15Rloaded_SCONE.osim
+			model_file = 2D_gait_15Rloaded_SCONE_locked_lumbar.osim
 			state_init_file = InitState_loaded.zml
 			initial_state_offset = 0~0.002<-0.2,0.2>
 			initial_state_offset_exclude = "*_tx*;*_ty*;*_u;*/speed"
@@ -19,25 +19,7 @@ CmaOptimizer {
 			fixed_control_step_size = 0.01
 		}
 
-		CompositeController {
-			<< ../../../SCONE/Examples/controllers/H0918RS2v3.scone >>
-
-			ReflexController {
-				name = lumbar_posture
-				dual_sided = 0
-				auto_std_factor = 0.05
-
-				BodyOrientationReflex {
-					target = lumbar
-					source = torso
-					axis = [ 0 0 1 ]
-					delay = 0.005
-					KP = ~150<0,500>
-					KV = ~20<0,50>
-					P0 = -0.11~0.01<-0.4,0.2>
-				}
-			}
-		}
+		<< ../../../SCONE/Examples/controllers/H0918RS2v3.scone >>
 
 		CompositeMeasure {
 			GaitMeasure {
@@ -46,6 +28,13 @@ CmaOptimizer {
 				threshold = 0.05
 				termination_height = 0.75
 				min_velocity = 0.5
+			}
+
+			DofMeasure {
+				name = PelvisTilt
+				weight = 0.1
+				dof = pelvis_tilt
+				position { min = -30 max = 30 abs_penalty = 1 }
 			}
 		}
 	}

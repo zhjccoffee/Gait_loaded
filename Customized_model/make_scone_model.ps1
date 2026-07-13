@@ -1,11 +1,13 @@
 param(
     [string]$InputFile = "2D_gait_15Rloaded.osim",
     [string]$OutputFile = "2D_gait_15Rloaded_SCONE.osim",
+    [string]$LockedLumbarOutputFile = "2D_gait_15Rloaded_SCONE_locked_lumbar.osim",
     [string]$OpenSimOutputFile = "2D_gait_15Rloaded_OpenSim.osim"
 )
 
 $inputPath = Join-Path $PSScriptRoot $InputFile
 $outputPath = Join-Path $PSScriptRoot $OutputFile
+$lockedLumbarOutputPath = Join-Path $PSScriptRoot $LockedLumbarOutputFile
 $openSimOutputPath = Join-Path $PSScriptRoot $OpenSimOutputFile
 $text = [System.IO.File]::ReadAllText($inputPath)
 
@@ -90,5 +92,24 @@ $text = [regex]::Replace($text, $forceSetPattern, [System.Text.RegularExpression
 $text = $text.Replace('<PlanarJoint name="groundPelvis">', '<PlanarJoint name="ground_pelvis">')
 
 [System.IO.File]::WriteAllText($outputPath, $text, [System.Text.UTF8Encoding]::new($false))
+
+# Baseline optimization model: lock the relative lumbar angle so the loaded
+# torso behaves like the rigid upper body assumed by the H0918 controller.
+$lumbarCoordinatePattern = '(?s)(<Coordinate name="lumbar">.*?<range>[^<]+</range>)'
+if (-not [regex]::IsMatch($text, $lumbarCoordinatePattern)) {
+    throw "Could not find the lumbar coordinate in $outputPath"
+}
+$lockedLumbarText = [regex]::Replace(
+    $text,
+    $lumbarCoordinatePattern,
+    [System.Text.RegularExpressions.MatchEvaluator]{
+        param($match)
+        $match.Groups[1].Value + "`r`n`t`t`t`t`t`t`t<locked>true</locked>"
+    },
+    1
+)
+[System.IO.File]::WriteAllText($lockedLumbarOutputPath, $lockedLumbarText, [System.Text.UTF8Encoding]::new($false))
+
 Write-Host "Created $openSimOutputPath"
 Write-Host "Created $outputPath"
+Write-Host "Created $lockedLumbarOutputPath"
