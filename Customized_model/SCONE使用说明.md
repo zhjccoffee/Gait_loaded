@@ -15,11 +15,13 @@
 2. 选择 **File → Open**，打开 `Gait_loaded_optimization.scone`。
 3. 创建/评估场景后，模型会显示在右侧 3D 视图中。
 
-本配置依赖 SCONE 自带的 `Documents/SCONE/Examples` 控制器、测度和预训练参数；当前电脑已安装这些文件。
+本配置面向服务器目录 `Documents/Projects/Gait_loaded/Customized_model`，依赖 `Documents/SCONE/Examples` 中的控制器和预训练参数。
 
 ## 开始优化
 
-在 `Gait_loaded_optimization.scone` 打开的情况下启动优化。配置使用 H0918 两状态反射步态控制器作为初值，目标包含行走速度、代谢/肌肉 effort、膝关节限制和地面反力。
+在 `Gait_loaded_optimization.scone` 打开的情况下启动优化。当前配置是第一阶段稳定行走优化：仿真时长 5 秒、目标速度 0.5 m/s，并加入腰部姿态反馈来控制负重躯干。SCONE 将 OpenSim 的 `lumbarAct` 按其坐标名暴露为执行器 `lumbar`，所以控制器中使用 `target = lumbar`。
+
+第一阶段得到能够稳定走满 5 秒的结果后，再以最佳 `.par` 为初值，将仿真时长逐步提高到 10 秒和 20 秒，并恢复 effort、膝关节限制和地面反力测度。
 
 `initial_load = 0` 是有意设置：这个 OpenSim 4 模型的骨盆关节名是 `groundPelvis`，而 SCONE 的自动初始加载功能固定查找旧示例中的 `ground_pelvis` 路径。骨盆高度和肌肉激活已由 `InitState_loaded.zml` 提供。
 

@@ -2,30 +2,51 @@ CmaOptimizer {
 	signature_prefix = DATE_TIME
 	min_progress = 1e-4
 	init {
-		file = ../../SCONE/Examples/init/H0918GaitRS2Osim4.par
-		std_factor = 2
+		file = ../../../SCONE/Examples/init/H0918GaitRS2Osim4.par
+		std_factor = 0.25
 		use_best_as_mean = 1
 	}
 
 	SimulationObjective {
-		max_duration = 20
+		max_duration = 5
 
 		ModelOpenSim4 {
 			model_file = 2D_gait_15Rloaded_SCONE.osim
 			state_init_file = InitState_loaded.zml
-			initial_state_offset = 0~0.01<-0.5,0.5>
+			initial_state_offset = 0~0.002<-0.2,0.2>
 			initial_state_offset_exclude = "*_tx*;*_ty*;*_u;*/speed"
 			initial_load = 0
-			fixed_control_step_size = 0.005
+			fixed_control_step_size = 0.01
 		}
 
-		<< ../../SCONE/Examples/controllers/H0918RS2v3.scone >>
+		CompositeController {
+			<< ../../../SCONE/Examples/controllers/H0918RS2v3.scone >>
+
+			ReflexController {
+				name = lumbar_posture
+				dual_sided = 0
+				auto_std_factor = 0.05
+
+				BodyOrientationReflex {
+					target = lumbar
+					source = torso
+					axis = [ 0 0 1 ]
+					delay = 0.005
+					KP = ~150<0,500>
+					KV = ~20<0,50>
+					P0 = -0.11~0.01<-0.4,0.2>
+				}
+			}
+		}
 
 		CompositeMeasure {
-			<< ../../SCONE/Examples/measures/Gait10.scone >>
-			<< ../../SCONE/Examples/measures/EffortWangCubed2000.scone >>
-			<< ../../SCONE/Examples/measures/DofKnee1.scone >>
-			<< ../../SCONE/Examples/measures/Grf14.scone >>
+			GaitMeasure {
+				name = Gait
+				weight = 100
+				threshold = 0.05
+				termination_height = 0.75
+				min_velocity = 0.5
+			}
 		}
 	}
 }
